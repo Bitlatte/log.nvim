@@ -105,9 +105,6 @@ require('log').setup({
 - [x] Jump to source file from log window
 - [ ] Filter by comment type
 - [ ] Search within logs
-- [ ] Telescope integration
-- [ ] Custom comment formats
-- [ ] Git integration (show last modified)
 
 ## Contributing
 
