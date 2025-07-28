@@ -8,7 +8,7 @@ A Neovim plugin for aggregating and viewing code comments (todos, notes, logs, e
 
 ```lua
 {
-  'your-username/log.nvim',
+  'Bitlatte/log.nvim',
   config = function()
     require('log').setup({
       -- Optional configuration
@@ -26,7 +26,7 @@ A Neovim plugin for aggregating and viewing code comments (todos, notes, logs, e
 
 ```lua
 use {
-  'your-username/log.nvim',
+  'Bitlatte/log.nvim',
   config = function()
     require('log').setup()
   end
@@ -129,31 +129,4 @@ log.nvim/
 
 Feel free to submit issues and enhancement requests!
 
----
 
-## Quick Start Example
-
-1. Create a new directory for your plugin:
-```bash
-mkdir -p ~/.local/share/nvim/site/pack/plugins/start/log.nvim
-cd ~/.local/share/nvim/site/pack/plugins/start/log.nvim
-```
-
-2. Copy the plugin files from the artifact above into the appropriate directories
-
-3. Add to your Neovim config:
-```lua
--- In your init.lua or init.vim
-require('log').setup()
-
--- Optional: Set up keybindings
-vim.keymap.set('n', '<leader>ls', ':LogShow<CR>', { desc = 'Show logs' })
-vim.keymap.set('n', '<leader>lt', ':LogToggle<CR>', { desc = 'Toggle logs' })
-```
-
-4. Test it out:
-   - Add some TODO comments to your code
-   - Run `:LogShow` to see them aggregated
-   - Use `r` in the log window to refresh
-
-That's it! Your MVP is ready to use.
