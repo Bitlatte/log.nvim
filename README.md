@@ -45,7 +45,7 @@ use {
 
 - `q` - Close the log window
 - `r` - Refresh/rescan the project
-- `<CR>` - Jump to the source file (coming soon)
+- `<CR>` - Jump to the source file 
 
 ### Example Comments
 
@@ -97,28 +97,12 @@ require('log').setup({
 })
 ```
 
-## File Structure
-
-```
-log.nvim/
-├── plugin/
-│   └── log.lua              # Plugin entry point
-├── lua/
-│   └── log/
-│       ├── init.lua         # Main module
-│       ├── config.lua       # Configuration management
-│       ├── scanner.lua      # File scanning logic
-│       └── ui.lua           # User interface
-├── README.md
-└── LICENSE
-```
-
 ## Roadmap
 
 - [x] Basic comment scanning
 - [x] Simple UI display
 - [x] Auto-refresh on file save
-- [ ] Jump to source file from log window
+- [x] Jump to source file from log window
 - [ ] Filter by comment type
 - [ ] Search within logs
 - [ ] Telescope integration
