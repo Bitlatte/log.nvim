@@ -127,11 +127,6 @@ function M._setup_keymaps()
   vim.keymap.set('n', '<CR>', function()
     M._jump_to_file()
   end, opts)
-  
-  -- Also allow double-click
-  vim.keymap.set('n', '<2-LeftMouse>', function()
-    M._jump_to_file()
-  end, opts)
 end
 
 function M.close()
