@@ -87,10 +87,19 @@ function M.get_logs()
   return M._logs
 end
 
+function M.export_logs()
+  local lines = {}
+  for _, log in ipairs(M._logs) do
+    table.insert(lines, string.format('%s:%d:%s:%s', log.file, log.line, log.pattern, log.text))
+  end
+  return table.concat(lines, '\n')
+end
+
 function M.get_filtered_logs()
   if not M._current_filter or M._current_filter == '' then
     return M._logs
   end
+
 
   local filtered_logs = {}
   local filter_pattern = M._current_filter:lower()

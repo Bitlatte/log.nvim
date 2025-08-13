@@ -16,3 +16,7 @@ vim.api.nvim_create_user_command('LogToggle', function()
   require('log').toggle()
 end, { desc = 'Toggle log window' })
 
+vim.api.nvim_create_user_command('LogExport', function()
+  print(require('log').export_logs())
+end, { desc = 'Export logs to a parseable format' })
+
