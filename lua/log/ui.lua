@@ -19,6 +19,12 @@ function M.open(logs)
 end
 
 function M._open_window(logs)
+  if win and vim.api.nvim_win_is_valid(win) then
+    vim.api.nvim_set_current_win(win)
+    M.refresh(logs)
+    return
+  end
+
   if buf and vim.api.nvim_buf_is_valid(buf) then
     vim.api.nvim_buf_delete(buf, { force = true })
   end
@@ -283,6 +289,7 @@ function M.close()
       vim.api.nvim_win_close(win, true)
     end
     win = nil
+    buf = nil
   elseif cfg.output_format == 'quickfix' then
     vim.cmd('cclose')
   elseif cfg.output_format == 'buffer' then
@@ -297,6 +304,9 @@ function M.focus()
   if cfg.output_format == 'window' then
     if win and vim.api.nvim_win_is_valid(win) then
       vim.api.nvim_set_current_win(win)
+    else
+      -- If window was closed manually, reopen it
+      M.open(require('log').get_logs())
     end
   elseif cfg.output_format == 'quickfix' then
     vim.cmd('copen')
