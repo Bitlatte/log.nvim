@@ -185,9 +185,13 @@ function M._setup_keymaps()
 end
 
 function M._show_actions_menu()
+  local original_win = vim.api.nvim_get_current_win()
+  local cursor = vim.api.nvim_win_get_cursor(original_win)
+  local line_num = cursor[1]
+
   local actions = {
-    { text = 'Delete Log', action = function() M._delete_log() end },
-    { text = 'Copy Log Text', action = function() M._copy_log_text() end },
+    { text = 'Delete Log', action = function() M._delete_log(line_num) end },
+    { text = 'Copy Log Text', action = function() M._copy_log_text(line_num) end },
   }
 
   local action_buf = vim.api.nvim_create_buf(false, true)
@@ -243,9 +247,7 @@ function M._show_actions_menu()
   end
 end
 
-function M._delete_log()
-  local cursor = vim.api.nvim_win_get_cursor(0)
-  local line_num = cursor[1]
+function M._delete_log(line_num)
   local log_entry = log_data[line_num]
 
   if not log_entry or log_entry.is_header then
@@ -268,9 +270,7 @@ function M._delete_log()
   vim.notify('Log deleted successfully!', vim.log.levels.INFO)
 end
 
-function M._copy_log_text()
-  local cursor = vim.api.nvim_win_get_cursor(0)
-  local line_num = cursor[1]
+function M._copy_log_text(line_num)
   local log_entry = log_data[line_num]
 
   if not log_entry or log_entry.is_header then
