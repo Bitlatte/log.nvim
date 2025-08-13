@@ -62,6 +62,16 @@ The plugin will automatically detect comments like:
 -- IDEA: Could use caching here for better performance
 ```
 
+### Exporting Logs
+
+The `:LogExport` command prints all logs to the command line in a `file:line:pattern:text` format. This is useful for piping the logs to other command-line tools.
+
+**Example:** Find all TODOs related to "refactor":
+
+```bash
+:LogExport | grep "TODO:.*refactor"
+```
+
 ## Configuration
 
 Default configuration:
