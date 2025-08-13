@@ -40,7 +40,6 @@ use {
 - `:LogShow` - Open the log comments window
 - `:LogScan` - Manually scan project for log comments
 - `:LogToggle` - Toggle the log window open/closed
-- `:LogExport` - Export logs to a parseable format for piping
 
 ### Keymaps (in log window)
 
