@@ -82,25 +82,29 @@ require('log').setup({
   },
 
   -- Comment patterns for different file types
+  -- Can be a string for single-line, or a table of strings for multiple patterns (e.g., for multi-line comments).
+  -- A 'default' key can be provided for a fallback pattern for unknown file types.
   comment_patterns = {
-    lua = '%-%-',
-    python = '#',
-    javascript = '//',
-    typescript = '//',
-    go = '//',
-    rust = '//',
-    c = '//',
-    cpp = '//',
-    java = '//',
-    php = '//',
-    sh = '#',
-    bash = '#',
-    ruby = '#',
-    perl = '#',
-    vim = '"',
-    css = '/%*',
-    html = '<!--',
-    xml = '<!--',
+    default = '//', -- Fallback for unknown file types
+    lua = '%-%-', -- Lua single-line comment
+    python = '#', -- Python single-line comment
+    javascript = '//', -- JavaScript single-line comment
+    typescript = '//', -- TypeScript single-line comment
+    go = '//', -- Go single-line comment
+    rust = '//', -- Rust single-line comment
+    c = '//', -- C single-line comment
+    cpp = '//', -- C++ single-line comment
+    java = '//', -- Java single-line comment
+    php = '//', -- PHP single-line comment
+    sh = '#', -- Shell script single-line comment
+    bash = '#', -- Bash single-line comment
+    ruby = '#', -- Ruby single-line comment
+    perl = '#', -- Perl single-line comment
+    vim = '"', -- Vim script single-line comment
+    markdown = '<!--', -- Markdown HTML comment
+    html = {'<!--', '-->'}, -- HTML multi-line comment
+    xml = {'<!--', '-->'}, -- XML multi-line comment
+    css = {'/%*', '*%/'}, -- CSS multi-line comment
   },
   
   -- Window configuration

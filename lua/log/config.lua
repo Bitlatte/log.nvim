@@ -25,7 +25,9 @@ local default_config = {
   },
   
   -- Comment patterns for different file types
+  -- Can be a string for single-line, or a table of strings for multiple patterns (e.g., for multi-line comments)
   comment_patterns = {
+    default = '//', -- Fallback for unknown file types
     lua = '%-%-',
     python = '#',
     javascript = '//',
@@ -41,9 +43,10 @@ local default_config = {
     ruby = '#',
     perl = '#',
     vim = '"',
-    css = '/%*',
-    html = '<!--',
-    xml = '<!--',
+    markdown = '<!--',
+    html = {'<!--', '-->'},
+    xml = {'<!--', '-->'},
+    css = {'/%*', '*%/'},
   },
   
   -- UI settings

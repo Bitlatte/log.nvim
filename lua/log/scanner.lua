@@ -40,7 +40,7 @@ function M._get_files_to_scan(root)
     ' -o '
   )
   
-  local cmd = 'find ' .. vim.fn.shellescape(root) .. ' \( ' .. exclude_paths .. ' \) -o \( ' .. extensions .. ' \) -print'
+  local cmd = [[find ]] .. vim.fn.shellescape(root) .. [[ \( ]] .. exclude_paths .. [[ \) -o \( ]] .. extensions .. [[ \) -print]]
   
   local output = vim.fn.system(cmd)
   if vim.v.shell_error == 0 then
@@ -100,22 +100,29 @@ function M._get_file_comment_pattern(file_ext)
     cxx = 'cpp',
     hpp = 'cpp',
     h = 'c',
+    md = 'markdown',
   }
   
   ext = ext_map[ext] or ext
-  return cfg.comment_patterns[ext]
+  
+  local patterns = cfg.comment_patterns[ext] or cfg.comment_patterns.default
+  
+  if type(patterns) == 'string' then
+    return { patterns }
+  end
+  
+  return patterns or {}
 end
 
 function M._extract_comment(line, file_ext)
-  local pattern = M._get_file_comment_pattern(file_ext)
-  if not pattern then
-    return nil
-  end
+  local patterns = M._get_file_comment_pattern(file_ext)
   
-  local comment_start = line:find(pattern)
-  if comment_start then
-    -- Extract everything after the comment marker
-    return line:sub(comment_start + #pattern)
+  for _, pattern in ipairs(patterns) do
+    local comment_start = line:find(pattern, 1, true)
+    if comment_start then
+      -- Extract everything after the comment marker
+      return line:sub(comment_start + #pattern)
+    end
   end
   
   return nil
