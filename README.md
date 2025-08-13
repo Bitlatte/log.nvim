@@ -46,6 +46,7 @@ use {
 - `q` - Close the log window
 - `r` - Refresh/rescan the project
 - `<CR>` - Jump to the source file 
+- `a` - Show actions menu (delete, copy) 
 
 ### Example Comments
 
@@ -78,7 +79,8 @@ require('log').setup({
   
   -- Directories to exclude from scanning
   exclude_dirs = {
-    'node_modules', '.git', 'target', 'build', 'dist', '__pycache__'
+    'node_modules', '.git', 'target', 'build', 'dist', '__pycache__',
+    '.pytest_cache', '.mypy_cache', 'vendor'
   },
 
   -- Comment patterns for different file types
@@ -86,7 +88,7 @@ require('log').setup({
   -- A 'default' key can be provided for a fallback pattern for unknown file types.
   comment_patterns = {
     default = '//', -- Fallback for unknown file types
-    lua = '%-%-', -- Lua single-line comment
+    lua = '--', -- Lua single-line comment
     python = '#', -- Python single-line comment
     javascript = '//', -- JavaScript single-line comment
     typescript = '//', -- TypeScript single-line comment
@@ -120,6 +122,9 @@ require('log').setup({
   -- Display options
   show_line_numbers = true,
   show_file_paths = true,
+
+  -- Output format
+  output_format = 'window', -- 'window', 'quickfix', or 'buffer'
 })
 ```
 
