@@ -28,7 +28,7 @@ local default_config = {
   -- Can be a string for single-line, or a table of strings for multiple patterns (e.g., for multi-line comments)
   comment_patterns = {
     default = '//', -- Fallback for unknown file types
-    lua = '%-%-',
+    lua = '--',
     python = '#',
     javascript = '//',
     typescript = '//',
