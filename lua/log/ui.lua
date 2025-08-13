@@ -274,7 +274,7 @@ function M._copy_log_text()
 
   vim.fn.setreg('+', log_entry.text)
   vim.notify('Log text copied to clipboard!', vim.log.levels.INFO)
-}
+end
 
 function M.close()
   local cfg = config.get()
