@@ -80,6 +80,28 @@ require('log').setup({
   exclude_dirs = {
     'node_modules', '.git', 'target', 'build', 'dist', '__pycache__'
   },
+
+  -- Comment patterns for different file types
+  comment_patterns = {
+    lua = '%-%-',
+    python = '#',
+    javascript = '//',
+    typescript = '//',
+    go = '//',
+    rust = '//',
+    c = '//',
+    cpp = '//',
+    java = '//',
+    php = '//',
+    sh = '#',
+    bash = '#',
+    ruby = '#',
+    perl = '#',
+    vim = '"',
+    css = '/%*',
+    html = '<!--',
+    xml = '<!--',
+  },
   
   -- Window configuration
   window = {

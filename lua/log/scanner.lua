@@ -2,31 +2,6 @@ local config = require('log.config')
 
 local M = {}
 
--- Comment patterns for different file types
-local comment_patterns = {
-  -- Single-line comments
-  lua = { '%-%-' },
-  python = { '#' },
-  javascript = { '//' },
-  typescript = { '//' },
-  go = { '//' },
-  rust = { '//' },
-  c = { '//' },
-  cpp = { '//' },
-  java = { '//' },
-  php = { '//' },
-  sh = { '#' },
-  bash = { '#' },
-  ruby = { '#' },
-  perl = { '#' },
-  vim = { '"' },
-  
-  -- Multi-line comments (we'll handle these separately)
-  css = { '/\\*', '\\*/' },
-  html = { '<!--', '-->' },
-  xml = { '<!--', '-->' },
-}
-
 function M.scan_project()
   local logs = {}
   local root = vim.fn.getcwd()
@@ -40,7 +15,7 @@ function M.scan_project()
   end
   
   -- Sort by file path, then by line number
-  table.sort(logs, function(a, b)
+  table.sort(logs, function(a, b) 
     if a.file == b.file then
       return a.line < b.line
     end
@@ -66,7 +41,7 @@ function M._get_files_to_scan(root)
   )
   
   local cmd = string.format(
-    'find %s \\( %s \\) -o \\( %s \\) -print',
+    'find %s \( %s \) -o \( %s \) -print',
     vim.fn.shellescape(root),
     exclude_paths,
     extensions
@@ -74,7 +49,7 @@ function M._get_files_to_scan(root)
   
   local output = vim.fn.system(cmd)
   if vim.v.shell_error == 0 then
-    for line in output:gmatch('[^\r\n]+') do
+    for line in output:gmatch("[^\n]+") do
       if line ~= '' then
         table.insert(files, line)
       end
@@ -101,39 +76,12 @@ function M._scan_file(file_path)
   end
   
   local line_num = 0
-  local in_multiline_comment = false
-  local multiline_start, multiline_end = M._get_multiline_patterns(file_ext)
-  
   for line in file:lines() do
     line_num = line_num + 1
     
-    -- Handle multi-line comments
-    if multiline_start and multiline_end then
-      if not in_multiline_comment then
-        if line:find(multiline_start) then
-          in_multiline_comment = true
-        end
-      end
-      
-      if in_multiline_comment then
-        -- Check for patterns in multi-line comment
-        local comment_text = M._extract_multiline_comment(line, multiline_start, multiline_end)
-        if comment_text then
-          M._check_patterns_in_comment(logs, cfg.patterns, file_path, line_num, line, comment_text)
-        end
-        
-        if line:find(multiline_end) then
-          in_multiline_comment = false
-        end
-      end
-    end
-    
-    -- Handle single-line comments (even if we're in a multi-line comment context)
-    if not in_multiline_comment then
-      local comment_text = M._extract_single_line_comment(line, file_ext)
-      if comment_text then
-        M._check_patterns_in_comment(logs, cfg.patterns, file_path, line_num, line, comment_text)
-      end
+    local comment_text = M._extract_comment(line, file_ext)
+    if comment_text then
+      M._check_patterns_in_comment(logs, cfg.patterns, file_path, line_num, line, comment_text)
     end
   end
   
@@ -141,7 +89,8 @@ function M._scan_file(file_path)
   return logs
 end
 
-function M._get_file_comment_patterns(file_ext)
+function M._get_file_comment_pattern(file_ext)
+  local cfg = config.get()
   -- Normalize extension
   local ext = file_ext:lower()
   
@@ -159,50 +108,22 @@ function M._get_file_comment_patterns(file_ext)
   }
   
   ext = ext_map[ext] or ext
-  return comment_patterns[ext] or {}
+  return cfg.comment_patterns[ext]
 end
 
-function M._get_multiline_patterns(file_ext)
-  local ext = file_ext:lower()
-  if ext == 'css' or ext == 'c' or ext == 'cpp' or ext == 'java' or ext == 'javascript' or ext == 'typescript' then
-    return '/\\*', '\\*/'
-  elseif ext == 'html' or ext == 'xml' then
-    return '<!%-%-', '%-%->'
-  elseif ext == 'python' then
-    -- Handle Python docstrings
-    return '"""', '"""'
+function M._extract_comment(line, file_ext)
+  local pattern = M._get_file_comment_pattern(file_ext)
+  if not pattern then
+    return nil
   end
-  return nil, nil
-end
-
-function M._extract_single_line_comment(line, file_ext)
-  local patterns = M._get_file_comment_patterns(file_ext)
   
-  for _, pattern in ipairs(patterns) do
-    local comment_start = line:find(pattern)
-    if comment_start then
-      -- Extract everything after the comment marker
-      local comment_text = line:sub(comment_start):gsub('^' .. pattern .. '%s*', '')
-      return comment_text
-    end
+  local comment_start = line:find(pattern)
+  if comment_start then
+    -- Extract everything after the comment marker
+    return line:sub(comment_start + #pattern)
   end
   
   return nil
-end
-
-function M._extract_multiline_comment(line, start_pattern, end_pattern)
-  -- For multi-line comments, we want the content between markers
-  local content = line
-  
-  -- Remove start marker if present
-  content = content:gsub(start_pattern, '')
-  -- Remove end marker if present  
-  content = content:gsub(end_pattern, '')
-  -- Remove common comment decorations
-  content = content:gsub('^%s*%*%s*', '') -- Remove leading * in /* */ style
-  content = content:gsub('^%s*', '') -- Remove leading whitespace
-  
-  return content ~= '' and content or nil
 end
 
 function M._check_patterns_in_comment(logs, patterns, file_path, line_num, full_line, comment_text)

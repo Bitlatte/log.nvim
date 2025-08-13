@@ -24,6 +24,28 @@ local default_config = {
     '.pytest_cache', '.mypy_cache', 'vendor'
   },
   
+  -- Comment patterns for different file types
+  comment_patterns = {
+    lua = '%-%-',
+    python = '#',
+    javascript = '//',
+    typescript = '//',
+    go = '//',
+    rust = '//',
+    c = '//',
+    cpp = '//',
+    java = '//',
+    php = '//',
+    sh = '#',
+    bash = '#',
+    ruby = '#',
+    perl = '#',
+    vim = '"',
+    css = '/%*',
+    html = '<!--',
+    xml = '<!--',
+  },
+  
   -- UI settings
   window = {
     position = 'right',  -- 'left', 'right', 'top', 'bottom'
