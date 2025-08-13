@@ -5,7 +5,6 @@ local ui = require('log.ui')
 local M = {}
 
 -- Internal state
--- NOTE: Internal State
 M._logs = {}
 M._is_open = false
 M._current_filter = nil
