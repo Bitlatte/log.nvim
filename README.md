@@ -47,6 +47,7 @@ use {
 - `r` - Refresh/rescan the project
 - `<CR>` - Jump to the source file 
 - `a` - Show actions menu (delete, copy) 
+- `/` - Filter logs by pattern 
 
 ### Example Comments
 
