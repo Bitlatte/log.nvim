@@ -64,12 +64,17 @@ The plugin will automatically detect comments like:
 
 ### Exporting Logs
 
-The `:LogExport` command prints all logs to the command line in a `file:line:pattern:text` format. This is useful for piping the logs to other command-line tools.
+You can either print all logs or pipe them directly to a shell command.
 
-**Example:** Find all TODOs related to "refactor":
+**Print all logs:**
+```vim
+:LogExport
+```
 
-```bash
-:LogExport | grep "TODO:.*refactor"
+**Pipe to an external command:**
+Find all TODOs related to "refactor" using `grep`:
+```vim
+:LogExport grep "TODO:.*refactor"
 ```
 
 ## Configuration
