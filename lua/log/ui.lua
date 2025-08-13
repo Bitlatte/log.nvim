@@ -182,6 +182,12 @@ function M._setup_keymaps()
   vim.keymap.set('n', 'a', function()
     M._show_actions_menu()
   end, opts)
+
+  -- Filter logs
+  vim.keymap.set('n', '/', function()
+    local pattern = vim.fn.input('Filter: ')
+    require('log').set_filter(pattern)
+  end, opts)
 end
 
 function M._show_actions_menu()

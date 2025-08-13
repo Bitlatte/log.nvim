@@ -5,8 +5,10 @@ local ui = require('log.ui')
 local M = {}
 
 -- Internal state
+-- NOTE: Internal State
 M._logs = {}
 M._is_open = false
+M._current_filter = nil
 
 function M.setup(opts)
   config.setup(opts)
@@ -35,6 +37,9 @@ end
 function M.scan_project()
   M._logs = scanner.scan_project()
   M.highlight_logs()
+  if M._is_open then
+    ui.refresh(M.get_filtered_logs())
+  end
   return M._logs
 end
 
@@ -57,7 +62,7 @@ end
 
 function M.show_logs()
   if not M._is_open then
-    ui.open(M._logs)
+    ui.open(M.get_filtered_logs())
     M._is_open = true
   else
     ui.focus()
@@ -81,6 +86,31 @@ end
 
 function M.get_logs()
   return M._logs
+end
+
+function M.get_filtered_logs()
+  if not M._current_filter or M._current_filter == '' then
+    return M._logs
+  end
+
+  local filtered_logs = {}
+  local filter_pattern = M._current_filter:lower()
+
+  for _, log in ipairs(M._logs) do
+    local log_text = (log.pattern .. ': ' .. log.text):lower()
+    if log_text:find(filter_pattern, 1, true) then
+      table.insert(filtered_logs, log)
+    end
+  end
+
+  return filtered_logs
+end
+
+function M.set_filter(pattern)
+  M._current_filter = pattern
+  if M._is_open then
+    ui.refresh(M.get_filtered_logs())
+  end
 end
 
 return M
