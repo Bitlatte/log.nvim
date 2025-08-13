@@ -40,12 +40,7 @@ function M._get_files_to_scan(root)
     ' -o '
   )
   
-  local cmd = string.format(
-    'find %s \( %s \) -o \( %s \) -print',
-    vim.fn.shellescape(root),
-    exclude_paths,
-    extensions
-  )
+  local cmd = 'find ' .. vim.fn.shellescape(root) .. ' \( ' .. exclude_paths .. ' \) -o \( ' .. extensions .. ' \) -print'
   
   local output = vim.fn.system(cmd)
   if vim.v.shell_error == 0 then

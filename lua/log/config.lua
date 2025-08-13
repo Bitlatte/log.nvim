@@ -61,6 +61,9 @@ local default_config = {
   
   -- Show file paths in log view
   show_file_paths = true,
+
+  -- Output format
+  output_format = 'window', -- 'window', 'quickfix', or 'buffer'
 }
 
 local config = {}

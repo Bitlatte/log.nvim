@@ -7,6 +7,18 @@ local win = nil
 local log_data = {}
 
 function M.open(logs)
+  local cfg = config.get()
+  
+  if cfg.output_format == 'window' then
+    M._open_window(logs)
+  elseif cfg.output_format == 'quickfix' then
+    M._open_quickfix(logs)
+  elseif cfg.output_format == 'buffer' then
+    M._open_buffer(logs)
+  end
+end
+
+function M._open_window(logs)
   if buf and vim.api.nvim_buf_is_valid(buf) then
     vim.api.nvim_buf_delete(buf, { force = true })
   end
@@ -49,6 +61,38 @@ function M.open(logs)
   
   -- Set up keymaps
   M._setup_keymaps()
+end
+
+function M._open_quickfix(logs)
+  local qf_list = {}
+  for _, log in ipairs(logs) do
+    table.insert(qf_list, {
+      filename = log.file,
+      lnum = log.line,
+      text = string.format('[%s] %s', log.pattern, log.text),
+    })
+  end
+  
+  vim.fn.setqflist(qf_list)
+  vim.cmd('copen')
+end
+
+function M._open_buffer(logs)
+  if buf and vim.api.nvim_buf_is_valid(buf) then
+    vim.api.nvim_buf_delete(buf, { force = true })
+  end
+  
+  buf = vim.api.nvim_create_buf(false, true)
+  vim.api.nvim_buf_set_option(buf, 'buftype', 'nofile')
+  vim.api.nvim_buf_set_option(buf, 'swapfile', false)
+  vim.api.nvim_buf_set_option(buf, 'bufhidden', 'wipe')
+  vim.api.nvim_buf_set_option(buf, 'filetype', 'log')
+  vim.api.nvim_buf_set_name(buf, 'Log Comments')
+  
+  M._populate_buffer(logs)
+  
+  vim.cmd('split')
+  vim.api.nvim_win_set_buf(0, buf)
 end
 
 function M._populate_buffer(logs)
@@ -127,25 +171,167 @@ function M._setup_keymaps()
   vim.keymap.set('n', '<CR>', function()
     M._jump_to_file()
   end, opts)
+
+  -- Show actions menu
+  vim.keymap.set('n', 'a', function()
+    M._show_actions_menu()
+  end, opts)
 end
 
-function M.close()
-  if win and vim.api.nvim_win_is_valid(win) then
-    vim.api.nvim_win_close(win, true)
+function M._show_actions_menu()
+  local actions = {
+    { text = 'Delete Log', action = function() M._delete_log() end },
+    { text = 'Copy Log Text', action = function() M._copy_log_text() end },
+  }
+
+  local action_buf = vim.api.nvim_create_buf(false, true)
+  vim.api.nvim_buf_set_option(action_buf, 'buftype', 'nofile')
+  vim.api.nvim_buf_set_option(action_buf, 'swapfile', false)
+  vim.api.nvim_buf_set_option(action_buf, 'bufhidden', 'wipe')
+  vim.api.nvim_buf_set_name(action_buf, 'Log Actions')
+
+  local lines = {}
+  for i, action in ipairs(actions) do
+    table.insert(lines, string.format('%d. %s', i, action.text))
   end
-  win = nil
+  vim.api.nvim_buf_set_lines(action_buf, 0, -1, false, lines)
+
+  local width = 30
+  local height = #actions + 2
+  local row = vim.api.nvim_win_get_cursor(0)[1] - 1
+  local col = vim.api.nvim_win_get_cursor(0)[2]
+
+  local action_win = vim.api.nvim_open_win(action_buf, true, {
+    relative = 'win',
+    row = row,
+    col = col,
+    width = width,
+    height = height,
+    border = 'single',
+    focusable = true,
+  })
+
+  vim.api.nvim_set_current_win(action_win)
+
+  vim.keymap.set('n', 'q', function()
+    vim.api.nvim_win_close(action_win, true)
+    M.focus()
+  end, { buffer = action_buf, silent = true })
+
+  vim.keymap.set('n', '<CR>', function()
+    local selected_line = vim.api.nvim_win_get_cursor(0)[1]
+    local action = actions[selected_line]
+    if action then
+      action.action()
+    end
+    vim.api.nvim_win_close(action_win, true)
+    M.focus()
+  end, { buffer = action_buf, silent = true })
+
+  for i = 1, #actions do
+    vim.keymap.set('n', tostring(i), function()
+      actions[i].action()
+      vim.api.nvim_win_close(action_win, true)
+      M.focus()
+    end, { buffer = action_buf, silent = true })
+  end
+end
+
+function M._delete_log()
+  local cursor = vim.api.nvim_win_get_cursor(0)
+  local line_num = cursor[1]
+  local log_entry = log_data[line_num]
+
+  if not log_entry or log_entry.is_header then
+    vim.notify('Cannot delete header or empty line.', vim.log.levels.WARN)
+    return
+  end
+
+  -- Read file content
+  local lines = vim.fn.readfile(log_entry.file)
+  
+  -- Remove the log line
+  table.remove(lines, log_entry.line)
+
+  -- Write back to file
+  vim.fn.writefile(lines, log_entry.file)
+
+  -- Rescan and refresh
+  require('log').scan_project()
+  require('log').show_logs()
+  vim.notify('Log deleted successfully!', vim.log.levels.INFO)
+end
+
+function M._copy_log_text()
+  local cursor = vim.api.nvim_win_get_cursor(0)
+  local line_num = cursor[1]
+  local log_entry = log_data[line_num]
+
+  if not log_entry or log_entry.is_header then
+    vim.notify('No log text to copy.', vim.log.levels.WARN)
+    return
+  end
+
+  vim.fn.setreg('+', log_entry.text)
+  vim.notify('Log text copied to clipboard!', vim.log.levels.INFO)
+}
+
+function M.close()
+  local cfg = config.get()
+  if cfg.output_format == 'window' then
+    if win and vim.api.nvim_win_is_valid(win) then
+      vim.api.nvim_win_close(win, true)
+    end
+    win = nil
+  elseif cfg.output_format == 'quickfix' then
+    vim.cmd('cclose')
+  elseif cfg.output_format == 'buffer' then
+    if buf and vim.api.nvim_buf_is_valid(buf) then
+      vim.api.nvim_buf_delete(buf, { force = true })
+    end
+  end
 end
 
 function M.focus()
-  if win and vim.api.nvim_win_is_valid(win) then
-    vim.api.nvim_set_current_win(win)
+  local cfg = config.get()
+  if cfg.output_format == 'window' then
+    if win and vim.api.nvim_win_is_valid(win) then
+      vim.api.nvim_set_current_win(win)
+    end
+  elseif cfg.output_format == 'quickfix' then
+    vim.cmd('copen')
+  elseif cfg.output_format == 'buffer' then
+    -- Find the buffer and switch to it
+    for _, b in ipairs(vim.api.nvim_list_bufs()) do
+      if vim.api.nvim_buf_get_name(b):find('Log Comments') then
+        local win_id = vim.fn.bufwinid(b)
+        if win_id ~= -1 then
+          vim.api.nvim_set_current_win(win_id)
+        else
+          vim.cmd('sbuffer ' .. b)
+        end
+        return
+      end
+    end
   end
 end
 
 function M.refresh(logs)
-  if buf and vim.api.nvim_buf_is_valid(buf) then
-    vim.api.nvim_buf_set_option(buf, 'modifiable', true)
-    M._populate_buffer(logs)
+  local cfg = config.get()
+  if cfg.output_format == 'window' then
+    if buf and vim.api.nvim_buf_is_valid(buf) then
+      vim.api.nvim_buf_set_option(buf, 'modifiable', true)
+      M._populate_buffer(logs)
+    end
+  elseif cfg.output_format == 'quickfix' then
+    M._open_quickfix(logs)
+  elseif cfg.output_format == 'buffer' then
+    if buf and vim.api.nvim_buf_is_valid(buf) then
+      vim.api.nvim_buf_set_option(buf, 'modifiable', true)
+      M._populate_buffer(logs)
+    else
+      M._open_buffer(logs)
+    end
   end
 end
 

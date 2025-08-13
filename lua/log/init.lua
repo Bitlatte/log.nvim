@@ -11,6 +11,9 @@ M._is_open = false
 function M.setup(opts)
   config.setup(opts)
   
+  -- Create highlight group
+  vim.api.nvim_set_hl(0, 'LogPattern', { link = 'Todo' })
+  
   -- Auto-scan on plugin load
   M.scan_project()
   
@@ -31,7 +34,25 @@ end
 
 function M.scan_project()
   M._logs = scanner.scan_project()
+  M.highlight_logs()
   return M._logs
+end
+
+function M.highlight_logs()
+  local ns_id = vim.api.nvim_create_namespace('log_pattern_highlight')
+  
+  -- Clear previous highlights
+  for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+    vim.api.nvim_buf_clear_namespace(buf, ns_id, 0, -1)
+  end
+  
+  -- Add new highlights
+  for _, log in ipairs(M._logs) do
+    local buf_id = vim.fn.bufnr(log.file)
+    if buf_id ~= -1 then
+      vim.api.nvim_buf_add_highlight(buf_id, ns_id, 'LogPattern', log.line - 1, 0, -1)
+    end
+  end
 end
 
 function M.show_logs()
