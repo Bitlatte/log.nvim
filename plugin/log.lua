@@ -16,4 +16,3 @@ vim.api.nvim_create_user_command('LogToggle', function()
   require('log').toggle()
 end, { desc = 'Toggle log window' })
 
--- TODO: Help me
